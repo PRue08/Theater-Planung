@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -5,26 +6,178 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Theater Planung</title>
 <style>
-body{margin:0;font-family:system-ui;background:#f4f5f7}
-nav{background:#fff;padding:10px;display:flex;gap:10px;align-items:center}
-nav a{padding:6px 10px;border-radius:6px;text-decoration:none;color:#000}
-nav a.active,nav a:hover{background:#ddd}
-.card{background:#fff;border:1px solid #ccc;border-radius:10px;padding:10px;margin:10px}
-table{border-collapse:collapse;width:100%}
-td,th{border:1px solid #ccc;padding:5px;text-align:center}
-td{min-width:60px}
-td[contenteditable]{background:#fafafa}
-.hidden{display:none}
-.btn{padding:6px 10px;border:1px solid #ccc;border-radius:6px;background:#eee;cursor:pointer}
-input,textarea{width:100%;box-sizing:border-box}
-.stage-thumb{width:100px;height:100px;border:1px solid #999;background:#eee;cursor:pointer;position:relative}
-.stage-thumb span{position:absolute;top:2px;left:2px;font-size:11px}
-#stageModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
-#stageModal.hidden{display:none}
-#stageModal .box{background:#fff;padding:10px;border-radius:10px}
-canvas{border:1px solid #000;background:#fff;touch-action:none}
-.roleCard{border:1px solid #ccc;border-radius:8px;padding:8px;margin:8px}
-.sceneCard{border:1px solid #ccc;border-radius:8px;padding:8px;margin:8px}
+/* Globale Stile */
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif; /* Verbesserte Schriftart */
+    background: #f4f5f7;
+    line-height: 1.6; /* Bessere Lesbarkeit */
+}
+
+/* Navigation */
+nav {
+    background: #fff;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Leichter Schatten für Tiefe */
+}
+
+nav a {
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #000;
+    transition: background-color 0.3s ease; /* Sanfter Übergangseffekt */
+}
+
+nav a.active,
+nav a:hover {
+    background: #ddd;
+}
+
+/* Karten (Sections) */
+.card {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px; /* Erhöhter Padding für mehr Platz */
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Leichter Schatten */
+}
+
+/* Tabellen */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 15px; /* Abstand unter der Tabelle */
+}
+
+th,
+td {
+    border: 1px solid #ccc;
+    padding: 8px; /* Erhöhter Padding */
+    text-align: center;
+}
+
+th {
+    background-color: #f0f0f0; /* Hintergrundfarbe für Tabellenkopf */
+    font-weight: bold;
+}
+
+td {
+    min-width: 60px;
+}
+
+td[contenteditable] {
+    background: #fafafa;
+}
+
+/* Versteckte Elemente */
+.hidden {
+    display: none;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 12px; /* Angepasster Padding */
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #eee;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Sanfter Übergangseffekt */
+}
+
+.btn:hover {
+    background-color: #ddd;
+}
+
+/* Formularelemente */
+input,
+textarea {
+    width: 100%;
+    padding: 8px; /* Padding für Input-Felder */
+    box-sizing: border-box;
+    margin-bottom: 10px; /* Abstand unter den Input-Feldern */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Bühnenbild-Miniaturansichten */
+.stage-thumb {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #999;
+    background: #eee;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden; /* Stellt sicher, dass der Inhalt nicht überläuft */
+}
+
+.stage-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Füllt den Container ohne Verzerrung */
+}
+
+.stage-thumb span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 11px;
+    background-color: rgba(255, 255, 255, 0.7); /* Halbtransparenter Hintergrund */
+    padding: 2px;
+    border-radius: 3px;
+}
+
+/* Bühnenbild-Modal */
+#stageModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Stellt sicher, dass es über allem liegt */
+}
+
+#stageModal.hidden {
+    display: none;
+}
+
+#stageModal .box {
+    background: #fff;
+    padding: 20px; /* Erhöhter Padding */
+    border-radius: 10px;
+    max-width: 90%; /* Maximale Breite für responsives Design */
+    max-height: 90%; /* Maximale Höhe */
+    overflow: auto; /* Fügt Scrollbalken hinzu, wenn der Inhalt zu groß ist */
+}
+
+/* Canvas */
+canvas {
+    border: 1px solid #000;
+    background: #fff;
+    touch-action: none;
+}
+
+/* Rollen- und Szenenkarten */
+.roleCard,
+.sceneCard {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px; /* Angepasster Padding */
+    margin: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Leichter Schatten */
+}
+
+/* Flexbox-Layout für Bühnenbilder */
+#stageContainer {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 </style>
 </head>
 <body>
@@ -83,6 +236,7 @@ canvas{border:1px solid #000;background:#fff;touch-action:none}
 <button id="deleteRect">🗑 Löschen</button>
 <button id="zoomIn">➕</button>
 <button id="zoomOut">➖</button>
+<button id="deleteItem">🗑 Icon löschen</button>
     
 </div>
 <canvas id="canvas" width="900" height="900"></canvas>
@@ -149,9 +303,15 @@ function renderRoles(){
       <input placeholder="Requisiten" value="${r.props||""}">
       <textarea placeholder="Notizen">${r.notes||""}</textarea>
       <input type="file">
-      <button>❌ Rolle löschen</button>
+      <button class="btn delete-role-btn">❌ Rolle löschen</button>
     `;
-    d.querySelector("button").onclick = ()=>{ data.roles.splice(i,1); save(); renderRoles(); };
+    // Verwende Event Delegation, um das Problem mit mehrfach gebundenen Events zu vermeiden
+    d.querySelector(".delete-role-btn").addEventListener('click', (e) => {
+        e.preventDefault(); // Verhindert das Standardverhalten des Buttons
+        data.roles.splice(i,1);
+        save();
+        renderRoles();
+    });
     rolesList.appendChild(d);
   });
 }
@@ -173,16 +333,19 @@ function renderScenes(){
       <textarea placeholder="Choreografie">${s.choreo||""}</textarea>
       <textarea placeholder="Gegenstände">${s.props||""}</textarea>
       <input type="file">
-      <button>Szene löschen</button>
+      <button class="btn delete-scene-btn">Szene löschen</button>
     `;
-    d.onclick = () => { currentScene = i; renderStages(); };
-    d.querySelector("button").onclick = e => {
-      e.stopPropagation();
-      data.scenes.splice(i,1);
-      save();
-      renderScenes();
-      stageContainer.innerHTML="";
-    };
+    d.addEventListener('click', () => { currentScene = i; renderStages(); });
+
+       // Verwende Event Delegation, um das Problem mit mehrfach gebundenen Events zu vermeiden
+       d.querySelector(".delete-scene-btn").addEventListener('click', (e) => {
+            e.stopPropagation(); // Verhindert, dass der Klick auf das äußere div feuert
+            e.preventDefault(); // Verhindert das Standardverhalten des Buttons
+            data.scenes.splice(i,1);
+            save();
+            renderScenes();
+            stageContainer.innerHTML="";
+        });
     sceneList.appendChild(d);
   });
 }
@@ -190,187 +353,233 @@ addScene.onclick = () => { data.scenes.push({stages:[]}); save(); renderScenes()
 renderScenes();
 
 /* Bühnenbilder */
-const canvas = document.getElementById("canvas");
-const stageModal = document.getElementById("stageModal");
-let activeStage = null;
+function renderStages() {
+    stageContainer.innerHTML = "";
+    if (currentScene === null || !data.scenes[currentScene] || !data.scenes[currentScene].stages) {
+        return;
+    }
 
-function renderStages(){
-  stageContainer.innerHTML="";
-  if(currentScene===null) return;
-  data.scenes[currentScene].stages.forEach((img,i)=>{
-    const div = document.createElement("div");
-    div.className="stage-thumb";
-    div.innerHTML="<span>"+(i+1)+"</span>";
-    div.style.backgroundImage = img ? "url("+img+")" : "";
-    div.style.backgroundSize = "cover";
-    div.onclick = ()=>openStage(i);
-    stageContainer.appendChild(div);
-  });
+    data.scenes[currentScene].stages.forEach((stageData, index) => {
+        const stageThumb = document.createElement("div");
+        stageThumb.className = "stage-thumb";
+        stageThumb.innerHTML = `
+            <span>Bühne ${index + 1}</span>
+            <img src="${stageData}" alt="Bühnenbild ${index + 1}">
+        `;
+        stageThumb.addEventListener('click', () => openStage(index));
+        stageContainer.appendChild(stageThumb);
+    });
 }
 
 addStage.onclick = () => {
-  if(currentScene===null){ alert("Bitte zuerst eine Szene auswählen 👆"); return; }
-  data.scenes[currentScene].stages.push("");
-  save();
-  renderStages();
+    if (currentScene === null) {
+        alert("Bitte zuerst eine Szene auswählen 👆");
+        return;
+    }
+
+    // Neues leeres Bühnenbild erstellen
+    const emptyCanvas = document.createElement("canvas");
+    emptyCanvas.width = 900;
+    emptyCanvas.height = 900;
+    const emptyCtx = emptyCanvas.getContext("2d");
+    emptyCtx.fillStyle = "#fff";
+    emptyCtx.fillRect(0, 0, 900, 900);
+    const dataUrl = emptyCanvas.toDataURL();
+
+    // In die Daten einfügen
+    if (!data.scenes[currentScene].stages) {
+        data.scenes[currentScene].stages = []; // Initialisiert das Array, falls es nicht existiert
+    }
+    data.scenes[currentScene].stages.push(dataUrl);
+    save();
+
+    // Neu rendern
+    renderStages();
 };
 
 delStage.onclick = () => {
-  if(currentScene===null) return;
-  data.scenes[currentScene].stages.pop();
-  save();
-  renderStages();
+    if (currentScene === null) {
+        alert("Bitte zuerst eine Szene auswählen 👆");
+        return;
+    }
+
+    if (!data.scenes[currentScene].stages || data.scenes[currentScene].stages.length === 0) {
+        alert("Keine Bühnenbilder zum Löschen vorhanden.");
+        return;
+    }
+
+    data.scenes[currentScene].stages.pop(); // Löscht das letzte Bühnenbild
+    save();
+    renderStages();
 };
 
-/* Canvas Modal öffnen */
-function openStage(i){
-  activeStage=i;
-  resizeCanvas();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+/* ===== Canvas Setup ===== */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+ctx.lineCap = "round";
+ctx.font = "28px serif";
 
-  const imgData = data.scenes[currentScene].stages[i];
-  if(imgData){
-    const img=new Image();
-    img.onload=()=>ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    img.src=imgData;
-  }
+/* Tools */
+const pen = document.getElementById("pen");
+const eraser = document.getElementById("eraser");
+const person = document.getElementById("person");
+const chair = document.getElementById("chair");
+const boxIcon = document.getElementById("boxIcon");
+const rectTool = document.getElementById("rectTool");
+const deleteRect = document.getElementById("deleteRect");
+const deleteIcon = document.getElementById("deleteItem");
+const zoomIn = document.getElementById("zoomIn");
+const zoomOut = document.getElementById("zoomOut");
+const size = document.getElementById("size");
+const color = document.getElementById("color");
 
-  stageModal.classList.remove("hidden");
-}
+/* Canvas State */
+let scale = 1, tool = "pen", drawing = false;
+let paths = [], boxes = [], icons = [];
+let dragBox = null, resizeBox = null, selectedBox = null;
+let selectedIcon = null, currentPath = null, activeStage = null;
 
+/* ===== Canvas Funktionen ===== */
 function resizeCanvas(){
   const max = Math.min(window.innerWidth*0.9, window.innerHeight*0.7);
   canvas.width = max;
   canvas.height = max;
 }
 
-//*Tools*//
-let tool="pen", drawing=false;
-let scale=1;
-const ctx = canvas.getContext("2d");
-ctx.lineCap="round";
+function openStage(i){
+  activeStage = i;
+  resizeCanvas();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-let paths = [];      // Freihand-Zeichnungen
-let currentPath = null;
-let icons = [];      // Icons auf Canvas
-let boxes = [];      // Rechtecke
+  const imgData = data.scenes[currentScene].stages[i];
+  if(imgData){
+    const img = new Image();
+    img.onload = () => redraw(img); // Bild an redraw übergeben
+    img.src = imgData;
+  } else {
+    redraw();
+  }
 
-let dragBox=null, resizeBox=null, selectedBox=null;
+  stageModal.classList.remove("hidden");
+}
 
-pen.onclick=()=>tool="pen";
-eraser.onclick=()=>tool="eraser";
-person.onclick=()=>tool="person";
-chair.onclick=()=>tool="chair";
-boxIcon.onclick=()=>tool="box";
-rectTool.onclick=()=>tool="rect";
-
-zoomIn.onclick=()=>{ scale*=1.1; redraw(); };
-zoomOut.onclick=()=>{ scale/=1.1; redraw(); };
-deleteRect.onclick=()=>{ boxes.pop(); redraw(); };
-
+/* ===== Pointer Events ===== */
 canvas.onpointerdown = e => {
-  const r=canvas.getBoundingClientRect();
-  const x=(e.clientX-r.left)/scale;
-  const y=(e.clientY-r.top)/scale;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / scale;
+  const y = (e.clientY - rect.top) / scale;
 
-  // Prüfen ob Klick auf Box oder deren Resize-Griff
-  dragBox = boxes.find(b=>x>b.x && x<b.x+b.w && y>b.y && y<b.y+b.h);
-  if(dragBox){
+  console.log("Tool:", tool); // Debugging
+
+  // **Zuerst prüfen, ob gelöscht werden soll**
+  if (tool === "deleteIcon") {
+    selectedIcon = icons.find(i => x >= i.x && x <= i.x + i.size && y >= i.y && y <= i.y + i.size);
+    if (selectedIcon) {
+      icons = icons.filter(i => i !== selectedIcon);
+      selectedIcon = null;
+      redraw();
+      return; // Wichtig: Funktion hier verlassen, wenn gelöscht wurde
+    } else {
+      console.log("Kein Icon zum Löschen ausgewählt.");
+      return; // Wichtig: Funktion hier verlassen, wenn nichts zu löschen war
+    }
+  }
+
+  // **Dann prüfen, ob ein Icon ausgewählt werden soll (zum Verschieben)**
+  selectedIcon = icons.find(i => x >= i.x && x <= i.x + i.size && y >= i.y && y <= i.y + i.size);
+
+  console.log("Selected Icon:", selectedIcon); // Debugging
+
+  if (selectedIcon) {
+    // **Verschiebe-Modus aktivieren**
+    drawing = false; // Zeichnen deaktivieren
+    dragBox = null; // Box-Verschiebung deaktivieren
+    resizeBox = null; // Box-Größenänderung deaktivieren
+    return; // Wichtig: Funktion hier verlassen, um Verschiebung zu starten
+  }
+
+  // **Wenn kein Icon ausgewählt wurde, andere Aktionen ausführen**
+  selectedBox = boxes.find(b => x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
+  if (dragBox) {
     selectedBox = dragBox;
-    if(x>dragBox.x+dragBox.w-10 && y>dragBox.y+dragBox.h-10){
+    if (x > dragBox.x + dragBox.w - 10 && y > dragBox.y + dragBox.h - 10) {
       resizeBox = dragBox;
     }
     return;
   }
-  selectedBox=null;
+  selectedBox = null;
 
-  // Icons platzieren (auch in Boxen)
-  if(tool==="person"||tool==="chair"||tool==="box"){
-    icons.push({x,y,type:tool,size:parseInt(size.value)*6});
+  // Neues Icon platzieren
+  if (tool === "person" || tool === "chair" || tool === "box") {
+    const char = tool === "person" ? "👤" : tool === "chair" ? "🪑" : "📦";
+    icons.push({ char, x, y, size: parseInt(size.value) * 6, type: tool });
     redraw();
     return;
   }
 
-  // Neues Kästchen
-  if(tool==="rect"){
-    boxes.push({x:x-40,y:y-30,w:80,h:60});
+  // Neues Kästchen platzieren
+  if (tool === "rect") {
+    boxes.push({ x: x - 40, y: y - 30, w: 80, h: 60 });
     redraw();
     return;
   }
 
-  // Freihand-Zeichnung
-  drawing=true;
-  currentPath={tool, color:"#000", size:size.value, points:[{x,y}]};
-  paths.push(currentPath);
+  // Freihand zeichnen
+  if (tool === "pen" || tool === "eraser") {
+    drawing = true;
+    currentPath = { tool, color: color.value, size: parseInt(size.value), points: [{ x, y }] };
+    paths.push(currentPath);
+  }
 };
 
 canvas.onpointermove = e => {
-  const r=canvas.getBoundingClientRect();
-  const x=(e.clientX-r.left)/scale;
-  const y=(e.clientY-r.top)/scale;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / scale;
+  const y = (e.clientY - rect.top) / scale;
 
-  // Box verschieben
-  if(dragBox && !resizeBox){
-    dragBox.x=x-dragBox.w/2;
-    dragBox.y=y-dragBox.h/2;
+  // **Icon verschieben**
+  if (selectedIcon) {
+    selectedIcon.x = x - selectedIcon.size/2; // Zentriere das Icon unter dem Cursor
+    selectedIcon.y = y - selectedIcon.size/2; // Zentriere das Icon unter dem Cursor
     redraw();
     return;
   }
 
-  // Box skalieren
-  if(resizeBox){
-    resizeBox.w=Math.max(20, x-resizeBox.x);
-    resizeBox.h=Math.max(20, y-resizeBox.y);
+  if (dragBox && !resizeBox) {
+    dragBox.x = x - dragBox.w / 2;
+    dragBox.y = y - dragBox.h / 2;
     redraw();
     return;
   }
-
-  if(!drawing) return;
-  currentPath.points.push({x,y});
-  redraw();
+  if (resizeBox) {
+    resizeBox.w = Math.max(20, x - resizeBox.x);
+    resizeBox.h = Math.max(20, y - resizeBox.y);
+    redraw();
+    return;
+  }
+  if (drawing) {
+    currentPath.points.push({ x, y });
+    redraw();
+  }
 };
 
-canvas.onpointerup = () => { drawing=false; dragBox=null; resizeBox=null; selectedBox=null; };
+canvas.onpointerup = () => {
+  drawing = false;
+  dragBox = null;
+  resizeBox = null;
+  selectedBox = null;
+  // **Wichtig: selectedIcon hier auch auf null setzen, um die Verschiebung zu beenden**
+  selectedIcon = null;
+};
 
-// REDRAW-Funktion
-function redraw(){
+/* ===== Redraw Funktion ===== */
+function redraw(bgImg=null){
   ctx.setTransform(scale,0,0,scale,0,0);
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // Freihand-Zeichnungen
-  paths.forEach(p=>{
-    ctx.beginPath();
-    ctx.strokeStyle=p.color;
-    ctx.lineWidth=p.size;
-    ctx.globalCompositeOperation=p.tool==="eraser"?"destination-out":"source-over";
-    p.points.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));
-    ctx.stroke();
-  });
+  if(bgImg) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
 
-  ctx.globalCompositeOperation="source-over";
-
-  // Kästchen
-  boxes.forEach(b=>{
-    ctx.strokeStyle="#333"; ctx.lineWidth=2;
-    ctx.strokeRect(b.x,b.y,b.w,b.h);
-    // Resize-Griff unten rechts
-    ctx.fillStyle="#999";
-    ctx.fillRect(b.x+b.w-10,b.y+b.h-10,10,10);
-  });
-
-  // Icons
-  icons.forEach(i=>{
-    ctx.font=i.size+"px serif";
-    ctx.fillText(i.type==="person"?"👤":i.type==="chair"?"🪑":"📦", i.x, i.y);
-  });
-}
-
-
-function redraw(){
-  ctx.setTransform(scale,0,0,scale,0,0);
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // Paths
+  // Freihand
   paths.forEach(p=>{
     ctx.beginPath();
     ctx.strokeStyle=p.color;
@@ -379,33 +588,48 @@ function redraw(){
     p.points.forEach((pt,i)=> i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));
     ctx.stroke();
   });
-
-  // Icons
   ctx.globalCompositeOperation="source-over";
-  icons.forEach(i=>{
-    ctx.font=i.size+"px serif";
-    ctx.fillText(i.type==="person"?"👤":i.type==="chair"?"🪑":"📦",i.x,i.y);
+
+  // Boxen
+  boxes.forEach(b=>{
+    ctx.strokeStyle="#333"; ctx.lineWidth=2;
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+    ctx.fillStyle="#999"; ctx.fillRect(b.x+b.w-10,b.y+b.h-10,10,10);
   });
 
-  // Boxes
-  boxes.forEach(b=>{
-    ctx.strokeStyle="#333";
-    ctx.lineWidth=2;
-    ctx.strokeRect(b.x,b.y,b.w,b.h);
-    ctx.fillRect(b.x+b.w-8,b.y+b.h-8,8,8);
+  // Icons
+  icons.forEach(i=>{
+    ctx.font=i.size+"px serif";
+    ctx.fillText(i.char,i.x,i.y);
   });
 }
 
-document.getElementById("close").onclick=()=>{
-  data.scenes[currentScene].stages[activeStage]=canvas.toDataURL();
-  save(); renderStages();
+/* ===== Buttons ===== */
+pen.onclick = () => tool="pen";
+eraser.onclick = () => tool="eraser";
+person.onclick = () => tool="person";
+chair.onclick = () => tool="chair";
+boxIcon.onclick = () => tool="box";
+rectTool.onclick = () => tool="rect";
+deleteRect.onclick = () => { boxes.pop(); redraw(); };
+deleteIcon.onclick = () => tool="deleteIcon";
+zoomIn.onclick = () => { scale*=1.1; redraw(); };
+zoomOut.onclick = () => { scale/=1.1; redraw(); };
+
+/* ===== Close Button ===== */
+document.getElementById("close").onclick = () => {
+  data.scenes[currentScene].stages[activeStage] = canvas.toDataURL();
+  save();
+  renderStages();
   stageModal.classList.add("hidden");
 };
 
-
-
+// Initiales Rendern der Bühnenbilder, falls eine Szene bereits ausgewählt ist
+if (data.scenes.length > 0) {
+    currentScene = 0; // Wählt die erste Szene aus
+    renderStages();
+}
 </script>
-
-
 </body>
 </html>
+```
