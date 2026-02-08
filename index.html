@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theater Planung</title>
+<style>
+body{margin:0;font-family:system-ui;background:#f4f5f7}
+nav{background:#fff;padding:10px;display:flex;gap:10px;align-items:center}
+nav a{padding:6px 10px;border-radius:6px;text-decoration:none;color:#000}
+nav a.active,nav a:hover{background:#ddd}
+.card{background:#fff;border:1px solid #ccc;border-radius:10px;padding:10px;margin:10px}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #ccc;padding:5px;text-align:center}
+td{min-width:60px}
+td[contenteditable]{background:#fafafa}
+.hidden{display:none}
+.btn{padding:6px 10px;border:1px solid #ccc;border-radius:6px;background:#eee;cursor:pointer}
+input,textarea{width:100%;box-sizing:border-box}
+.stage-thumb{width:100px;height:100px;border:1px solid #999;background:#eee;cursor:pointer;position:relative}
+.stage-thumb span{position:absolute;top:2px;left:2px;font-size:11px}
+#stageModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
+#stageModal.hidden{display:none}
+#stageModal .box{background:#fff;padding:10px;border-radius:10px}
+canvas{border:1px solid #000;background:#fff;touch-action:none}
+.roleCard{border:1px solid #ccc;border-radius:8px;padding:8px;margin:8px}
+.sceneCard{border:1px solid #ccc;border-radius:8px;padding:8px;margin:8px}
+</style>
+</head>
+<body>
+
+<nav>
+<strong>🎭 Theater</strong>
+<a href="#" data-view="overview" class="active">Übersicht</a>
+<a href="#" data-view="roles">Rollen</a>
+<a href="#" data-view="scenes">Szenen</a>
+</nav>
+
+<main>
+
+<section id="overview" class="card">
+<h2>Übersicht</h2>
+<div>
+<button id="addRowO" class="btn">+ Zeile</button>
+<button id="delRowO" class="btn">- Zeile</button>
+<button id="addColO" class="btn">+ Spalte</button>
+<button id="delColO" class="btn">- Spalte</button>
+<button id="colorCell" class="btn">🎨 Zelle färben</button>
+</div>
+<table id="overviewTable"></table>
+</section>
+
+<section id="roles" class="card hidden">
+<h2>Rollen</h2>
+<div id="rolesList"></div>
+<button id="addRole" class="btn">+ Rolle hinzufügen</button>
+</section>
+
+<section id="scenes" class="card hidden">
+<h2>Szenen</h2>
+<div id="sceneList"></div>
+<button id="addScene" class="btn">+ Szene hinzufügen</button>
+<hr>
+<h3>Bühnenbilder</h3>
+<div id="stageContainer" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+<button id="addStage" class="btn">+ Bühnenbild</button>
+<button id="delStage" class="btn">- Bühnenbild</button>
+</section>
+
+</main>
+
+<div id="stageModal" class="hidden">
+<div class="box">
+<div>
+<button id="pen">✏️</button>
+<button id="eraser">🧽</button>
+<input id="size" type="range" min="1" max="20" value="4">
+<button id="rect">▭</button>
+<button id="zoomIn">➕</button>
+<button id="zoomOut">➖</button>
+<button id="rectTool">⬛ Kästchen</button>
+<button id="deleteRect">🗑 Kästchen löschen</button>
+
+</div>
+<canvas id="canvas" width="900" height="900"></canvas>
+<button id="close">Schließen</button>
+</div>
+</div>
+
+<script>
+/* Navigation */
+document.querySelectorAll("nav a").forEach(a=>{
+  a.onclick = e => {
+    e.preventDefault();
+    document.querySelectorAll("nav a").forEach(x=>x.classList.remove("active"));
+    a.classList.add("active");
+    document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+    document.getElementById(a.dataset.view).classList.remove("hidden");
+  };
+});
+
+/* Daten */
+let data = JSON.parse(localStorage.theater || '{"overview":[[]],"roles":[],"scenes":[]}');
+function save(){ localStorage.theater = JSON.stringify(data) }
+
+/* Übersicht Tabelle */
+let selected=null;
+function drawOverview(){
+  let t=document.getElementById("overviewTable"); t.innerHTML="";
+  data.overview.forEach((r,i)=>{
+    let tr=document.createElement("tr");
+    r.forEach((c,j)=>{
+      let td=document.createElement("td");
+      td.contentEditable=true;
+      td.innerText = c.text||"";
+      td.style.background = c.color||"";
+      td.onclick = () => selected=td;
+      td.oninput = () => { c.text=td.innerText; save(); };
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  });
+}
+if(data.overview.length===0){
+  data.overview = Array.from({length:33},()=>Array.from({length:26},()=>({text:""})));
+}
+drawOverview();
+
+addRowO.onclick=()=>{ data.overview.push(Array.from({length:data.overview[0].length},()=>({text:""}))); save(); drawOverview(); }
+delRowO.onclick=()=>{ data.overview.pop(); save(); drawOverview(); }
+addColO.onclick=()=>{ data.overview.forEach(r=>r.push({text:""})); save(); drawOverview(); }
+delColO.onclick=()=>{ data.overview.forEach(r=>r.pop()); save(); drawOverview(); }
+colorCell.onclick=()=>{ if(selected) selected.style.background = selected.style.background ? "" : "#ffe066"; }
+
+/* Rollen */
+function renderRoles(){
+  rolesList.innerHTML="";
+  data.roles.forEach((r,i)=>{
+    let d=document.createElement("div");
+    d.className="roleCard";
+    d.innerHTML=`
+      <input placeholder="Rolle" value="${r.name||""}">
+      <input placeholder="Darsteller" value="${r.actor||""}">
+      <textarea placeholder="Szenen / Auftritte">${r.scenes||""}</textarea>
+      <input placeholder="Kostüm" value="${r.costume||""}">
+      <input placeholder="Requisiten" value="${r.props||""}">
+      <textarea placeholder="Notizen">${r.notes||""}</textarea>
+      <input type="file">
+      <button>❌ Rolle löschen</button>
+    `;
+    d.querySelector("button").onclick = ()=>{ data.roles.splice(i,1); save(); renderRoles(); };
+    rolesList.appendChild(d);
+  });
+}
+addRole.onclick=()=>{ data.roles.push({}); save(); renderRoles(); };
+renderRoles();
+
+/* Szenen */
+let currentScene = null;
+function renderScenes(){
+  sceneList.innerHTML="";
+  data.scenes.forEach((s,i)=>{
+    let d=document.createElement("div");
+    d.className="sceneCard";
+    d.innerHTML=`
+      <h4>Szene ${i+1}</h4>
+      <textarea placeholder="Licht">${s.light||""}</textarea>
+      <textarea placeholder="Musik">${s.music||""}</textarea>
+      <textarea placeholder="Charaktere">${s.chars||""}</textarea>
+      <textarea placeholder="Choreografie">${s.choreo||""}</textarea>
+      <textarea placeholder="Gegenstände">${s.props||""}</textarea>
+      <input type="file">
+      <button>Szene löschen</button>
+    `;
+    d.onclick = () => { currentScene = i; renderStages(); };
+    d.querySelector("button").onclick = e => {
+      e.stopPropagation();
+      data.scenes.splice(i,1);
+      save();
+      renderScenes();
+      stageContainer.innerHTML="";
+    };
+    sceneList.appendChild(d);
+  });
+}
+addScene.onclick = () => { data.scenes.push({stages:[]}); save(); renderScenes(); };
+renderScenes();
+
+/* Bühnenbilder */
+const canvas = document.getElementById("canvas");
+const stageModal = document.getElementById("stageModal");
+let activeStage = null;
+
+function renderStages(){
+  stageContainer.innerHTML="";
+  if(currentScene===null) return;
+  data.scenes[currentScene].stages.forEach((img,i)=>{
+    const div = document.createElement("div");
+    div.className="stage-thumb";
+    div.innerHTML="<span>"+(i+1)+"</span>";
+    div.style.backgroundImage = img ? "url("+img+")" : "";
+    div.style.backgroundSize = "cover";
+    div.onclick = ()=>openStage(i);
+    stageContainer.appendChild(div);
+  });
+}
+
+addStage.onclick = () => {
+  if(currentScene===null){ alert("Bitte zuerst eine Szene auswählen 👆"); return; }
+  data.scenes[currentScene].stages.push("");
+  save();
+  renderStages();
+};
+
+delStage.onclick = () => {
+  if(currentScene===null) return;
+  data.scenes[currentScene].stages.pop();
+  save();
+  renderStages();
+};
+
+/* Canvas Modal öffnen */
+function openStage(i){
+  activeStage=i;
+  resizeCanvas();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const imgData = data.scenes[currentScene].stages[i];
+  if(imgData){
+    const img=new Image();
+    img.onload=()=>ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    img.src=imgData;
+  }
+
+  stageModal.classList.remove("hidden");
+}
+
+function resizeCanvas(){
+  const max = Math.min(window.innerWidth*0.9, window.innerHeight*0.7);
+  canvas.width = max;
+  canvas.height = max;
+}
+
+/* Tools */
+let tool = "pen", drawing = false;
+const ctx = canvas.getContext("2d");
+ctx.lineCap="round"; ctx.font="28px serif";
+
+let boxes = []; // Rechtecke
+
+pen.onclick=()=>tool="pen";
+eraser.onclick=()=>tool="eraser";
+person.onclick=()=>tool="person";
+chair.onclick=()=>tool="chair";
+boxIcon.onclick=()=>tool="box";
+
+addRect.onclick=()=>boxes.push({x:50,y:50,w:100,h:80});
+delRect.onclick=()=>boxes.pop();
+
+let dragBox=null;
+
+canvas.onpointerdown=e=>{
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+
+  // Box klicken?
+  dragBox = boxes.find(b=>x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h);
+
+  if(dragBox){ return; }
+
+  drawing=true;
+  if(tool==="person"){ ctx.fillText("👤",x,y); return; }
+  if(tool==="chair"){ ctx.fillText("🪑",x,y); return; }
+  if(tool==="box"){ ctx.fillText("📦",x,y); return; }
+
+  ctx.beginPath(); ctx.moveTo(x,y);
+};
+
+canvas.onpointermove=e=>{
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+
+  if(dragBox){
+    dragBox.x=x-dragBox.w/2;
+    dragBox.y=y-dragBox.h/2;
+    redraw();
+    return;
+  }
+
+  if(!drawing) return;
+  ctx.lineWidth=size.value;
+  ctx.globalCompositeOperation = tool==="eraser"?"destination-out":"source-over";
+  ctx.lineTo(x,y); ctx.stroke();
+};
+
+canvas.onpointerup=()=>{drawing=false; dragBox=null;}
+
+function redraw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  boxes.forEach(b=>{
+    ctx.strokeStyle="#333";
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+  });
+}
+
+close.onclick=()=>{
+  data.scenes[currentScene].stages[activeStage]=canvas.toDataURL();
+  save(); renderStages();
+  stageModal.classList.add("hidden");
+};
+
+
+</script>
+
+
+</body>
+</html>
