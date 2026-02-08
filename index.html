@@ -74,13 +74,16 @@ canvas{border:1px solid #000;background:#fff;touch-action:none}
 <div>
 <button id="pen">✏️</button>
 <button id="eraser">🧽</button>
+<input id="color" type="color" value="#000000">
 <input id="size" type="range" min="1" max="20" value="4">
-<button id="rect">▭</button>
+<button id="person">👤</button>
+<button id="chair">🪑</button>
+<button id="boxIcon">📦</button>
+<button id="rectTool">⬛ Kästchen</button>
+<button id="deleteRect">🗑 Löschen</button>
 <button id="zoomIn">➕</button>
 <button id="zoomOut">➖</button>
-<button id="rectTool">⬛ Kästchen</button>
-<button id="deleteRect">🗑 Kästchen löschen</button>
-
+    
 </div>
 <canvas id="canvas" width="900" height="900"></canvas>
 <button id="close">Schließen</button>
@@ -241,73 +244,164 @@ function resizeCanvas(){
   canvas.height = max;
 }
 
-/* Tools */
-let tool = "pen", drawing = false;
+//*Tools*//
+let tool="pen", drawing=false;
+let scale=1;
 const ctx = canvas.getContext("2d");
-ctx.lineCap="round"; ctx.font="28px serif";
+ctx.lineCap="round";
 
-let boxes = []; // Rechtecke
+let paths = [];      // Freihand-Zeichnungen
+let currentPath = null;
+let icons = [];      // Icons auf Canvas
+let boxes = [];      // Rechtecke
+
+let dragBox=null, resizeBox=null, selectedBox=null;
 
 pen.onclick=()=>tool="pen";
 eraser.onclick=()=>tool="eraser";
 person.onclick=()=>tool="person";
 chair.onclick=()=>tool="chair";
 boxIcon.onclick=()=>tool="box";
+rectTool.onclick=()=>tool="rect";
 
-addRect.onclick=()=>boxes.push({x:50,y:50,w:100,h:80});
-delRect.onclick=()=>boxes.pop();
+zoomIn.onclick=()=>{ scale*=1.1; redraw(); };
+zoomOut.onclick=()=>{ scale/=1.1; redraw(); };
+deleteRect.onclick=()=>{ boxes.pop(); redraw(); };
 
-let dragBox=null;
-
-canvas.onpointerdown=e=>{
+canvas.onpointerdown = e => {
   const r=canvas.getBoundingClientRect();
-  const x=e.clientX-r.left, y=e.clientY-r.top;
+  const x=(e.clientX-r.left)/scale;
+  const y=(e.clientY-r.top)/scale;
 
-  // Box klicken?
-  dragBox = boxes.find(b=>x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h);
+  // Prüfen ob Klick auf Box oder deren Resize-Griff
+  dragBox = boxes.find(b=>x>b.x && x<b.x+b.w && y>b.y && y<b.y+b.h);
+  if(dragBox){
+    selectedBox = dragBox;
+    if(x>dragBox.x+dragBox.w-10 && y>dragBox.y+dragBox.h-10){
+      resizeBox = dragBox;
+    }
+    return;
+  }
+  selectedBox=null;
 
-  if(dragBox){ return; }
+  // Icons platzieren (auch in Boxen)
+  if(tool==="person"||tool==="chair"||tool==="box"){
+    icons.push({x,y,type:tool,size:parseInt(size.value)*6});
+    redraw();
+    return;
+  }
 
+  // Neues Kästchen
+  if(tool==="rect"){
+    boxes.push({x:x-40,y:y-30,w:80,h:60});
+    redraw();
+    return;
+  }
+
+  // Freihand-Zeichnung
   drawing=true;
-  if(tool==="person"){ ctx.fillText("👤",x,y); return; }
-  if(tool==="chair"){ ctx.fillText("🪑",x,y); return; }
-  if(tool==="box"){ ctx.fillText("📦",x,y); return; }
-
-  ctx.beginPath(); ctx.moveTo(x,y);
+  currentPath={tool, color:"#000", size:size.value, points:[{x,y}]};
+  paths.push(currentPath);
 };
 
-canvas.onpointermove=e=>{
+canvas.onpointermove = e => {
   const r=canvas.getBoundingClientRect();
-  const x=e.clientX-r.left, y=e.clientY-r.top;
+  const x=(e.clientX-r.left)/scale;
+  const y=(e.clientY-r.top)/scale;
 
-  if(dragBox){
+  // Box verschieben
+  if(dragBox && !resizeBox){
     dragBox.x=x-dragBox.w/2;
     dragBox.y=y-dragBox.h/2;
     redraw();
     return;
   }
 
+  // Box skalieren
+  if(resizeBox){
+    resizeBox.w=Math.max(20, x-resizeBox.x);
+    resizeBox.h=Math.max(20, y-resizeBox.y);
+    redraw();
+    return;
+  }
+
   if(!drawing) return;
-  ctx.lineWidth=size.value;
-  ctx.globalCompositeOperation = tool==="eraser"?"destination-out":"source-over";
-  ctx.lineTo(x,y); ctx.stroke();
+  currentPath.points.push({x,y});
+  redraw();
 };
 
-canvas.onpointerup=()=>{drawing=false; dragBox=null;}
+canvas.onpointerup = () => { drawing=false; dragBox=null; resizeBox=null; selectedBox=null; };
 
+// REDRAW-Funktion
 function redraw(){
+  ctx.setTransform(scale,0,0,scale,0,0);
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Freihand-Zeichnungen
+  paths.forEach(p=>{
+    ctx.beginPath();
+    ctx.strokeStyle=p.color;
+    ctx.lineWidth=p.size;
+    ctx.globalCompositeOperation=p.tool==="eraser"?"destination-out":"source-over";
+    p.points.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));
+    ctx.stroke();
+  });
+
+  ctx.globalCompositeOperation="source-over";
+
+  // Kästchen
   boxes.forEach(b=>{
-    ctx.strokeStyle="#333";
+    ctx.strokeStyle="#333"; ctx.lineWidth=2;
     ctx.strokeRect(b.x,b.y,b.w,b.h);
+    // Resize-Griff unten rechts
+    ctx.fillStyle="#999";
+    ctx.fillRect(b.x+b.w-10,b.y+b.h-10,10,10);
+  });
+
+  // Icons
+  icons.forEach(i=>{
+    ctx.font=i.size+"px serif";
+    ctx.fillText(i.type==="person"?"👤":i.type==="chair"?"🪑":"📦", i.x, i.y);
   });
 }
 
-close.onclick=()=>{
+
+function redraw(){
+  ctx.setTransform(scale,0,0,scale,0,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Paths
+  paths.forEach(p=>{
+    ctx.beginPath();
+    ctx.strokeStyle=p.color;
+    ctx.lineWidth=p.size;
+    ctx.globalCompositeOperation=p.tool==="eraser"?"destination-out":"source-over";
+    p.points.forEach((pt,i)=> i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));
+    ctx.stroke();
+  });
+
+  // Icons
+  ctx.globalCompositeOperation="source-over";
+  icons.forEach(i=>{
+    ctx.font=i.size+"px serif";
+    ctx.fillText(i.type==="person"?"👤":i.type==="chair"?"🪑":"📦",i.x,i.y);
+  });
+
+  // Boxes
+  boxes.forEach(b=>{
+    ctx.strokeStyle="#333";
+    ctx.lineWidth=2;
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+    ctx.fillRect(b.x+b.w-8,b.y+b.h-8,8,8);
+  });
+}
+
+document.getElementById("close").onclick=()=>{
   data.scenes[currentScene].stages[activeStage]=canvas.toDataURL();
   save(); renderStages();
   stageModal.classList.add("hidden");
 };
+
 
 
 </script>
